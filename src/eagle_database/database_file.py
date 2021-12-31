@@ -1,6 +1,25 @@
 import h5py
 
-class database():
+class Subgroup():
+
+    def __init__(self, database):
+        """
+        Creates a Sugroup object that holds information about its past evolution.
+
+        Parameters
+        -----------
+        database : ObjectType
+            Object initialised through the Database class where the Subgroup of
+            interest is located
+
+        Returns
+        --------
+        None
+        """
+
+        pass
+
+class Database():
 
     def __init__(self, path):
         """
