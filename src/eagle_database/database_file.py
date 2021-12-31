@@ -45,3 +45,7 @@ class database():
                 self.data[group_name] = self.file[group_name][()]
             except:
                 raise KeyError('No group with specified name is present in this file.')
+
+    def __getitem__(self, group_name):
+        self.load(group_name)
+        return self.data[group_name]
