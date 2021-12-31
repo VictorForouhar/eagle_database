@@ -44,4 +44,4 @@ class database():
             try: 
                 self.data[group_name] = self.file[group_name][()]
             except:
-                raise KeyError('No group with specified name is prensent in this file.')
+                raise KeyError('No group with specified name is present in this file.')
