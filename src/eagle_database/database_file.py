@@ -2,7 +2,7 @@ import h5py
 
 class database():
 
-    def __init__(self, database_path):
+    def __init__(self, path):
         """
         Creates an EAGLE database object.
 
@@ -17,10 +17,10 @@ class database():
         """
         
         # Path to database
-        self.path = database_path
+        self._path = path
 
         # Open database file
-        self.file = h5py.File(database_path, 'r') 
+        self.file = h5py.File(self._path, 'r') 
         
         # Dict where data is stored
         self.data = {}
