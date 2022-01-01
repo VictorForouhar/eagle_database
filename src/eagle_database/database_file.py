@@ -24,8 +24,10 @@ class Database():
         
         # Dict where data is stored
         self.data = {}
-    
 
+        # Get properties of the simulation used to build dataset
+        self.get_properties()
+    
     def load(self, group_name):
         """
         Helper function used to load data if it is not available yet.
@@ -50,6 +52,11 @@ class Database():
         self.load(group_name)
         return self.data[group_name]
 
+    def get_properties(self):
+        self.properties = {}
+        for key, value in self.file['Header'].attrs:
+            self.properties[key] = value 
+
 class Subgroup():
 
     def __init__(self, database):
@@ -68,3 +75,4 @@ class Subgroup():
         """
 
         pass
+
