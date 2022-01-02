@@ -1,3 +1,4 @@
+from numpy import where, arange
 from .helper_functions import quick_search
 
 class Subgroup():
@@ -27,16 +28,25 @@ class Subgroup():
         self._database         = database
         self._subgroup_number  = subgroup_number
         self._snap_number      = snap_number
-        self._nodeIndex        = self.get_nodeIndex()
-        self._galaxyID         = self.get_galaxyID()
-        self._main_progenitors = self.get_main_progenitors() 
-        self.redshifts         = self.get_redshifts()
+
+        # Finding unique identifiers for specified group
+        self.get_positional_index()
+        self.get_nodeIndex()
+        self.get_galaxyID()
+        self.get_topLeafID()
+
+        # Retrieving progenitors along the main branch
+        self._main_progenitors = self.get_main_progenitors()
 
         # Dict where property evolution is stored. Perhaps redshifts should
         # be included here
         self.evolution = {}
-        
-        print ('hi')
+
+    def get_positional_index(self):
+        '''
+        Returns the array index where the object of interest is stored
+        '''
+        self._positional_index = where(self._database['Subhalo/SnapNum'] == self._snap_number)[0][self._subgroup_number]
 
     def get_nodeIndex(self):
         '''
@@ -44,19 +54,23 @@ class Subgroup():
         the combination:
         snap_number * 1e12 + file_number * 1e8 + subgroup_number_in_file
         '''
-        return 0
+        self._nodeIndex = self._database['MergerTree/nodeIndex'][self._positional_index]
 
     def get_galaxyID(self):
         '''
         Returns the unique identifier as given in the depth-first database
         '''
-        return 0
+        self._galaxyID = self._database['MergerTree/GalaxyID'][self._positional_index]
     
+    def get_topLeafID(self):
+        self._topLeafID = self._database['MergerTree/TopLeafID'][self._positional_index]
+
     def get_main_progenitors(self):
         '''
         Returns the main progenitors of the subgroup
         '''
-        return 0
+        self.main_progenitors = arange(self._galaxyID,self._topLeafID+1) 
+    
 
     def get_property_evolution(self, property):
         '''
