@@ -1,5 +1,5 @@
 import h5py
-from .subgroup_object import Subgroup
+from .subgroup import Subgroup
 
 class Database(Subgroup):
 
