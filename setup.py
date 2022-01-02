@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='eagle_database',
-      version='0.0.1',
+      version='2022.1',
       description='Package used to read EAGLE-like Subfind databases',
       author='Victor Forouhar Moreno',
       author_email='victor.j.forouhar@durham.ac.uk',
