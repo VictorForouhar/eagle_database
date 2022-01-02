@@ -1,4 +1,5 @@
 from numpy import where, arange
+import matplotlib.pyplot as plt
 from .helper_functions import quick_search
 
 class Subgroup():
@@ -100,6 +101,36 @@ class Subgroup():
     def __getitem__(self, property):
         self.get_property_evolution(property)
         return self.evolution[property]
+
+    def plot_evolution(self, x_axis, y_axis, x_scale = 'linear', y_scale = 'linear'):
+        '''
+        Helper function to plot the time evolution of a specified quantity.
+
+        Parameters
+        -----------
+        x_axis : str
+            Name of the time variable to plot as the x coordinate. Should be either
+            Redshift, aExp or tUniverse
+        y_axis : str
+            Name of the variable to choose as the y coordinate.
+        x_scale : str, opt
+            Scale of x_axis, either linear (default) or log.
+        y_scale : str, opt
+            Scale of y_axis, either linear (default) or log.
+        
+        Returns
+        -----------
+        int
+            0 on sucessfull execution
+        '''
+        fig, ax1 = plt.subplots(1)
+        ax1.plot(self[x_axis],self[y_axis])
+        ax1.set_xscale(x_scale)
+        ax1.set_yscale(y_scale)
+        ax1.set_xlabel(x_axis)
+        ax1.set_ylabel(y_axis)
+        plt.show()
+        return 0
 
     @property
     def positional_index(self):
