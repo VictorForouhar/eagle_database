@@ -1,6 +1,7 @@
 import h5py
+from .subgroup_object import Subgroup
 
-class Database():
+class Database(Subgroup):
 
     def __init__(self, path):
         """
@@ -27,6 +28,8 @@ class Database():
 
         # Get properties of the simulation used to build dataset
         self.get_properties()
+
+        # TODO: Generate sorter arrays 
     
     def load(self, group_name):
         """
@@ -54,25 +57,22 @@ class Database():
 
     def get_properties(self):
         self.properties = {}
-        for key, value in self.file['Header'].attrs:
+        for key, value in self.file['Header'].attrs.items():
             self.properties[key] = value 
 
-class Subgroup():
+    def track_subgroup(self, subgroup_number, snap_number):
+        self.subgroup = Subgroup(self, subgroup_number, snap_number)
+        return self.subgroup
 
-    def __init__(self, database):
-        """
-        Creates a Sugroup object that holds information about its past evolution.
+    # Subgroup is a good choice for a property (perhaps not!)
+    # @property
+    # def subgroup(self):
+    #     return self._subgroup
 
-        Parameters
-        -----------
-        database : ObjectType
-            Object initialised through the Database class where the Subgroup of
-            interest is located
+    # @subgroup.setter
+    # def set_subgroup(self, subgroup_number, snap_number):
+    #     self._subgroup = Subgroup(self, subgroup_number, snap_number)
 
-        Returns
-        --------
-        None
-        """
-
-        pass
-
+    # @subgroup.deleter
+    # def delete_subgroup(self):
+    #     del self._subgroup
