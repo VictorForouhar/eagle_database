@@ -5,7 +5,7 @@ from .subgroup import Subgroup
 class Database():
 
     def __init__(self, path):
-        """
+        '''
         Creates an EAGLE database object.
 
         Parameters
@@ -16,7 +16,7 @@ class Database():
         Returns
         --------
         None
-        """
+        '''
         
         # Path to database
         self._path = path
@@ -37,7 +37,7 @@ class Database():
         self.get_galaxyID_sorter()
     
     def load(self, group_name):
-        """
+        '''
         Helper function used to load data if it is not available yet.
 
         Parameters
@@ -48,7 +48,7 @@ class Database():
         Returns
         --------
         None
-        """
+        '''
 
         if group_name not in self.data:
             try: 
@@ -61,32 +61,42 @@ class Database():
         return self.data[group_name]
 
     def get_properties(self):
+        '''
+        Creates dictionary containing information about the simulation.        
+        '''
         self.properties = {}
         for key, value in self.file['Header'].attrs.items():
             self.properties[key] = value 
 
     def get_scale_factors(self):
+        '''
+        Retrieves expansion factors of each simulation snapshot.        
+        '''
         self.aExp = self.file['FileInfo/ExpansionFactorAtSnap'][()]
 
     def get_redshifts(self):
+        '''
+        Retrieves redshifts of each simulation snapshot.        
+        '''
         self.redshifts = 1 / self.aExp - 1
 
     def get_galaxyID_sorter(self):
+        '''
+        Creates a sorter array to sort galaxyID values in ascending order.
+        Used for searching more quickly further down the line. 
+        '''
         self._galaxyID_sorter = argsort(self['MergerTree/GalaxyID'])
 
     def track_subgroup(self, subgroup_number, snap_number):
+        '''
+        Creates a Subgroup class.
+
+        Paramters
+        ----------
+        subgroup_number : int
+            Absolute position of the subgroup in the subfind catalogue.
+        snap_number : int
+            Number of the snapshot where this subgroup is located.
+        '''
         self.subgroup = Subgroup(self, subgroup_number, snap_number)
         return self.subgroup
-
-    # Subgroup is a good choice for a property (perhaps not!)
-    # @property
-    # def subgroup(self):
-    #     return self._subgroup
-
-    # @subgroup.setter
-    # def set_subgroup(self, subgroup_number, snap_number):
-    #     self._subgroup = Subgroup(self, subgroup_number, snap_number)
-
-    # @subgroup.deleter
-    # def delete_subgroup(self):
-    #     del self._subgroup
