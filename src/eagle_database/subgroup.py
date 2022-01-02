@@ -42,6 +42,11 @@ class Subgroup():
         # be included here
         self.evolution = {}
 
+        # Load by default the time information of this merger tree
+        self.evolution['aExp'    ]  = self._database.aExp     [self['SnapNum']]
+        self.evolution['Redshift']  = self._database.redshifts[self['SnapNum']]
+        self.evolution['tUniverse'] = self._database.tUniverse[self['SnapNum']]
+
     def get_positional_index(self):
         '''
         Returns the array index where the object of interest is stored
@@ -88,8 +93,12 @@ class Subgroup():
             Name of the property to retrieve
         '''
         if property not in self.evolution:
-            self.evolution[property] = self._database['Subhalo/%s'%property][()][self._main_progenitors]
+            self.evolution[property] = self._database['Subhalo/%s'%property][()][self._main_progenitors['positional_index']]
 
+        return self.evolution[property]
+
+    def __getitem__(self, property):
+        self.get_property_evolution(property)
         return self.evolution[property]
 
     @property
