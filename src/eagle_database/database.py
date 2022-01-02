@@ -1,7 +1,7 @@
 import h5py
 from .subgroup import Subgroup
 
-class Database(Subgroup):
+class Database():
 
     def __init__(self, path):
         """
