@@ -69,7 +69,7 @@ class Database():
         return self.subgroup
 
     def get_scale_factors(self):
-        self.aExp = self.file['FileInfo/ExpansionFactorAtSnap']
+        self.aExp = self.file['FileInfo/ExpansionFactorAtSnap'][()]
 
     def get_redshifts(self):
         self.redshifts = 1 / self.aExp - 1
