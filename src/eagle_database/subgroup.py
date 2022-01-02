@@ -69,7 +69,14 @@ class Subgroup():
         '''
         Returns the main progenitors of the subgroup
         '''
-        return arange(self._galaxyID,self._topLeafID+1) 
+        main_progenitor_dict = {}
+        main_progenitor_dict['galaxyID']         = arange(self._galaxyID,self._topLeafID+1) 
+        main_progenitor_dict['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
+                                                                main_progenitor_dict['galaxyID'],
+                                                                self._database._galaxyID_sorter)
+        main_progenitor_dict['nodeIndex']        = self._database['MergerTree/nodeIndex'][main_progenitor_dict['positional_index']] 
+        
+        return main_progenitor_dict 
     
     def get_property_evolution(self, property):
         '''
