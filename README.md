@@ -13,26 +13,26 @@ This will install this package and all required dependencies.
 # Usage
 
 Locate the database file (e.g. Subfind.0.hdf5) and create a Database object:
-'''python
+```python
 from eagle_database.database import Database
 db = Database(path_to_database_file)
-'''
+```
 This will automatically make available information regarding the simulation (e.g. cosmology, output times, etc).
 
 We can then specify a subgroup we want to track. For example, for a simulation with the 127th snapshot corresponding to z = 0, the main subgroup of the most massive FoF at that time is:
-'''python
+```python
 # This creates a Subgroup object, where we specify the number of the  
 # subgroup of interest and the snapshot where it exists, respectively
 object_of_interest = db.track_object(0, 127) 
-'''
+```
 
 It is then simple to track the evolution of a given property as a function of time, via:
-'''python
+```python
 # Mass evolution
 object_of_interest['Mass']
 # Star formation rate evolution
 object_of_interest['StarFormationRate']
-'''
+```
 
 You can also plot how quantities evolve to quickly inspect whether they look reasonable.
 '''python
