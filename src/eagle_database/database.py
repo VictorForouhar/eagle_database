@@ -1,5 +1,6 @@
 import h5py
 from numpy import argsort
+from astropy.cosmology import FlatLambdaCDM
 from .subgroup import Subgroup
 
 class Database():
@@ -31,6 +32,10 @@ class Database():
         self.get_properties()
         self.get_scale_factors()
         self.get_redshifts()
+
+        # Specify cosmology and get age of the universe at output snapshots
+        self.set_cosmology()
+        self.get_tUniverse()
 
         # Generate sorter array for GalaxyID to speed up array search further
         # down the line 
@@ -86,6 +91,13 @@ class Database():
         Used for searching more quickly further down the line. 
         '''
         self._galaxyID_sorter = argsort(self['MergerTree/GalaxyID'])
+
+    def set_cosmology(self):
+        self.cosmology = FlatLambdaCDM(H0=self.properties['HubbleParam'] * 100, Om0=self.properties['Omega0'])
+
+    def get_tUniverse(self):
+        # Given in Gyrs
+        self.tUniverse = self.cosmology.age(self.redshifts).value
 
     def track_subgroup(self, subgroup_number, snap_number):
         '''
