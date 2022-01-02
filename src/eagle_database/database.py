@@ -1,4 +1,5 @@
 import h5py
+from numpy import argsort
 from .subgroup import Subgroup
 
 class Database():
@@ -23,8 +24,6 @@ class Database():
         # Open database file
         self.file = h5py.File(self._path, 'r') 
         
-
-
         # Dict where data is stored
         self.data = {}
 
@@ -33,7 +32,9 @@ class Database():
         self.get_scale_factors()
         self.get_redshifts()
 
-        # TODO: Generate sorter arrays 
+        # Generate sorter array for GalaxyID to speed up array search further
+        # down the line 
+        self.get_galaxyID_sorter()
     
     def load(self, group_name):
         """
@@ -64,15 +65,18 @@ class Database():
         for key, value in self.file['Header'].attrs.items():
             self.properties[key] = value 
 
-    def track_subgroup(self, subgroup_number, snap_number):
-        self.subgroup = Subgroup(self, subgroup_number, snap_number)
-        return self.subgroup
-
     def get_scale_factors(self):
         self.aExp = self.file['FileInfo/ExpansionFactorAtSnap'][()]
 
     def get_redshifts(self):
         self.redshifts = 1 / self.aExp - 1
+
+    def get_galaxyID_sorter(self):
+        self._galaxyID_sorter = argsort(self['MergerTree/GalaxyID'])
+
+    def track_subgroup(self, subgroup_number, snap_number):
+        self.subgroup = Subgroup(self, subgroup_number, snap_number)
+        return self.subgroup
 
     # Subgroup is a good choice for a property (perhaps not!)
     # @property
