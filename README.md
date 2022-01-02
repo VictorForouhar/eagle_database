@@ -35,8 +35,8 @@ object_of_interest['StarFormationRate']
 ```
 
 You can also plot how quantities evolve to quickly inspect whether they look reasonable.
-'''python
+```python
 # First parameter should be time coordinate (Redshift, aExp or tUniverse);
 # second should be quantity of interest.
 object_of_interest.plot_evolution('tUniverse', 'Mass')
-'''
+```
