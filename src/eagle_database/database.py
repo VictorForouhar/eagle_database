@@ -23,11 +23,15 @@ class Database():
         # Open database file
         self.file = h5py.File(self._path, 'r') 
         
+
+
         # Dict where data is stored
         self.data = {}
 
-        # Get properties of the simulation used to build dataset
+        # Get properties and info of the simulation used to build dataset
         self.get_properties()
+        self.get_scale_factors()
+        self.get_redshifts()
 
         # TODO: Generate sorter arrays 
     
@@ -63,6 +67,12 @@ class Database():
     def track_subgroup(self, subgroup_number, snap_number):
         self.subgroup = Subgroup(self, subgroup_number, snap_number)
         return self.subgroup
+
+    def get_scale_factors(self):
+        self.aExp = self.file['FileInfo/ExpansionFactorAtSnap']
+
+    def get_redshifts(self):
+        self.redshifts = 1 / self.aExp - 1
 
     # Subgroup is a good choice for a property (perhaps not!)
     # @property
