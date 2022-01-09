@@ -48,7 +48,7 @@ class Subgroup():
         #-------------------------------------------------------------------------
         self._main_progenitors = self.get_main_progenitors()
         self._descendants      = self.get_descendants()
-        self._main_merger_tree = self.join_main_progenitors_and_descendants()
+        self._main_merger_tree = self.build_main_merger_tree()
 
         #-------------------------------------------------------------------------
         # Dictonary where this subgroup's  property evolution will be 
@@ -162,7 +162,7 @@ class Subgroup():
         
         return descendant_dict
     
-    def join_main_progenitors_and_descendants(self):
+    def build_main_merger_tree(self):
         '''
         Joins information about progenitors and descendants to access
         the full time evolution of the group.
