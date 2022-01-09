@@ -47,8 +47,8 @@ class Subgroup():
         # for this subgroup's full time evolution.
         #-------------------------------------------------------------------------
         self._main_progenitors = self.get_main_progenitors()
-        self._main_descendants = self.get_main_descendants()
-        self._main_tree        = self.join_main_progenitors_and_descendants()
+        self._descendants      = self.get_descendants()
+        self._main_merger_tree = self.join_main_progenitors_and_descendants()
 
         #-------------------------------------------------------------------------
         # Dictonary where this subgroup's  property evolution will be 
@@ -142,7 +142,7 @@ class Subgroup():
 
         return descendant_galaxyID
 
-    def get_main_descendants(self):
+    def get_descendants(self):
         '''
         Gets the galaxyID,positional index and nodeIndex of this subgroup's
         descendants.
@@ -158,9 +158,9 @@ class Subgroup():
             return None
         
         # Collect results into a dict and return
-        main_descendant_dict = self.get_galaxyID_info(asarray(all_descendant_galaxyIDs)[::-1])
+        descendant_dict = self.get_galaxyID_info(asarray(all_descendant_galaxyIDs)[::-1])
         
-        return main_descendant_dict
+        return descendant_dict
     
     def join_main_progenitors_and_descendants(self):
         '''
@@ -169,14 +169,14 @@ class Subgroup():
         '''
         # Method used to reconstruct evolution (past and future) of given object
         if self._main_progenitors is None:
-            main_evolutionary_tree = self._main_descendants
-        elif self._main_descendants is None:
+            main_evolutionary_tree = self._descendants
+        elif self._descendants is None:
             main_evolutionary_tree = self._main_progenitors
         else:
             
             main_evolutionary_tree = {}
             for key in self._main_progenitors.keys():
-                main_evolutionary_tree[key] = hstack([self._main_descendants[key], self._main_progenitors[key]])
+                main_evolutionary_tree[key] = hstack([self._descendants[key], self._main_progenitors[key]])
         return main_evolutionary_tree
     
     def get_property_evolution(self, property):
@@ -255,3 +255,11 @@ class Subgroup():
     @property
     def main_progenitors(self):
         return self._main_progenitors
+
+    @property
+    def descendants(self):
+        return self._main_progenitors
+
+    @property
+    def main_merger_tree(self):
+        return self._main_merger_tree
