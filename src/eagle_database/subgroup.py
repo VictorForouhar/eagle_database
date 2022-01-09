@@ -1,6 +1,6 @@
-from numpy import where, arange, asarray, hstack
 import matplotlib.pyplot as plt
 from .helper_functions import quick_search
+from numpy import where, arange, asarray, hstack
 
 class Subgroup():
 
@@ -90,33 +90,10 @@ class Subgroup():
         '''
         return self._database['MergerTree/TopLeafID'][self._positional_index]
 
-    def get_galaxyID_info(self, galaxyID_array):
-        '''
-        Retrieves positional index and nodeIndex of the specified list of galaxyIDs.
-
-        Parameters
-        ----------
-        galaxyID_array : ArrayType
-            galaxyID values that we want to search for
-
-        Returns
-        ----------
-        galaxyID_info : dict
-            Dictionary holding where to locate galaxyID in this database file (positional_index)
-            and the corresponding nodeIndex of these objects (nodeIndex).
-        '''
-
-        galaxyID_info = {}
-        galaxyID_info['galaxyID']         = galaxyID_array
-        galaxyID_info['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
-                                                         galaxyID_array, self._database._galaxyID_sorter)
-        galaxyID_info['nodeIndex']        = self._database['MergerTree/nodeIndex'][galaxyID_info['positional_index']] 
-        
-        return galaxyID_info
-
     #=============================================================================
     # Methods related to merger tree descendants/progenitor identification
     #=============================================================================
+
     def get_main_progenitors(self):
         '''
         Returns the main progenitors of the subgroup
@@ -178,7 +155,11 @@ class Subgroup():
             for key in self._main_progenitors.keys():
                 main_evolutionary_tree[key] = hstack([self._descendants[key], self._main_progenitors[key]])
         return main_evolutionary_tree
-    
+
+    #=============================================================================
+    # Methods to retrieve evolution of properties
+    #=============================================================================
+
     def get_property_evolution(self, property):
         '''
         Retrieves main progenitor branch evolution of specified property.
@@ -198,8 +179,9 @@ class Subgroup():
         return self.evolution[property]
 
     #=============================================================================
-    # Helper methods
+    # Helper methods (plotting and searching)
     #=============================================================================
+
     def plot_evolution(self, x_axis, y_axis, x_scale = 'linear', y_scale = 'linear'):
         '''
         Helper function to plot the time evolution of a specified quantity.
@@ -223,19 +205,46 @@ class Subgroup():
         '''
 
         fig, ax1 = plt.subplots(1)
+        # Plot quantity
         ax1.plot(self[x_axis],self[y_axis])
+        # Set scale
         ax1.set_xscale(x_scale)
         ax1.set_yscale(y_scale)
+        # Set labels
         ax1.set_xlabel(x_axis)
         ax1.set_ylabel(y_axis)
         plt.show()
 
         return 0
 
+    def get_galaxyID_info(self, galaxyID_array):
+        '''
+        Retrieves positional index and nodeIndex of the specified list of galaxyIDs.
 
+        Parameters
+        ----------
+        galaxyID_array : ArrayType
+            galaxyID values that we want to search for
+
+        Returns
+        ----------
+        galaxyID_info : dict
+            Dictionary holding where to locate galaxyID in this database file (positional_index)
+            and the corresponding nodeIndex of these objects (nodeIndex).
+        '''
+
+        galaxyID_info = {}
+        galaxyID_info['galaxyID']         = galaxyID_array
+        galaxyID_info['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
+                                                         galaxyID_array, self._database._galaxyID_sorter)
+        galaxyID_info['nodeIndex']        = self._database['MergerTree/nodeIndex'][galaxyID_info['positional_index']] 
+        
+        return galaxyID_info
+    
     #=============================================================================
     # Property definitions
     #=============================================================================
+    
     @property
     def positional_index(self):
         return self._positional_index
