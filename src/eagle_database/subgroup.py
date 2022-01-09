@@ -26,23 +26,33 @@ class Subgroup():
         None
         """
 
+        #-------------------------------------------------------------------------
+        # Setting basic properties of this subgroup
+        #-------------------------------------------------------------------------
         self._database         = database
         self._subgroup_number  = subgroup_number
         self._snap_number      = snap_number
 
-        # Finding unique identifiers for specified group
+        #-------------------------------------------------------------------------
+        # Retrieve additional properties required to get time evolution of
+        # propenitors/descendants of this subgroup
+        #-------------------------------------------------------------------------
         self._positional_index = self.get_positional_index() 
         self._nodeIndex        = self.get_nodeIndex()
         self._galaxyID         = self.get_galaxyID()
         self._topLeafID        = self.get_topLeafID()
         
-        # Retrieving progenitors and descendants along the main branch
+        #-------------------------------------------------------------------------
+        # Getting main progenitor branch, descendants and joining them
+        # for this subgroup's full time evolution.
+        #-------------------------------------------------------------------------
         self._main_progenitors = self.get_main_progenitors()
         self._main_descendants = self.get_main_descendants()
         self._main_tree        = self.join_main_progenitors_and_descendants()
 
-        # Dict where property evolution is stored. Perhaps redshifts should
-        # be included here
+        #-------------------------------------------------------------------------
+        # Dictonary where this subgroup's  property evolution will be 
+        #-------------------------------------------------------------------------
         self.evolution = {}
 
         # Load by default the time information of this merger tree
@@ -50,37 +60,44 @@ class Subgroup():
         self.evolution['Redshift']  = self._database.redshifts[self['SnapNum']]
         self.evolution['tUniverse'] = self._database.tUniverse[self['SnapNum']]
 
+    #=============================================================================
+    # Methods to get a hold of this object's info
+    # during initialisation
+    #=============================================================================
+
     def get_positional_index(self):
         '''
-        Returns the array index where the object of interest is stored
+        Returns the array index where the object of interest is stored.
         '''
         return where(self._database['Subhalo/SnapNum'] == self._snap_number)[0][self._subgroup_number]
 
     def get_nodeIndex(self):
         '''
-        Returns the nodeIndex of the tracked subgroup, given by
-        the combination:
+        Returns the nodeIndex of the tracked subgroup, given by:
         snap_number * 1e12 + file_number * 1e8 + subgroup_number_in_file
         '''
         return self._database['MergerTree/nodeIndex'][self._positional_index]
 
     def get_galaxyID(self):
         '''
-        Returns the unique identifier as given in the depth-first database
+        Returns the unique identifier as given in the depth-first database.
         '''
         return self._database['MergerTree/GalaxyID'][self._positional_index]
     
     def get_topLeafID(self):
+        '''
+        Returns the galaxyID of this group's earliest redshift main progenitor.
+        '''
         return self._database['MergerTree/TopLeafID'][self._positional_index]
 
     def get_galaxyID_info(self, galaxyID_array):
         '''
         Retrieves positional index and nodeIndex of the specified list of galaxyIDs.
 
-        Paramters
+        Parameters
         ----------
         galaxyID_array : ArrayType
-            Holds the galaxyID values that we want to search for
+            galaxyID values that we want to search for
 
         Returns
         ----------
@@ -97,11 +114,14 @@ class Subgroup():
         
         return galaxyID_info
 
+    #=============================================================================
+    # Methods related to merger tree descendants/progenitor identification
+    #=============================================================================
     def get_main_progenitors(self):
         '''
         Returns the main progenitors of the subgroup
         '''
-        
+
         all_progenitor_galaxyIDs = arange(self._galaxyID,self._topLeafID+1)
         return self.get_galaxyID_info(all_progenitor_galaxyIDs) 
     
@@ -112,7 +132,7 @@ class Subgroup():
         Parameters
         -----------
         galaxyID : int
-            SUBFIND group we want to find the descendant of
+            galaxyID of the subgroup we want to find the descendant of
         '''
         # Find entry corresponding to current galaxyID
         positional_index = quick_search(self._database['MergerTree/GalaxyID'], galaxyID,
@@ -120,13 +140,15 @@ class Subgroup():
 
         descendant_galaxyID = self._database['MergerTree/DescendantID'][positional_index]
 
-        # This condition determines when no descendant is found # TODO: check whether this will lead to
-        # the descendant being the main subhalo once it has been stripped
         return descendant_galaxyID
 
     def get_main_descendants(self):
+        '''
+        Gets the galaxyID,positional index and nodeIndex of this subgroup's
+        descendants.
+        '''
 
-        # First get all galaxyIDs 
+        # Iteratively find all descendant galaxyIDs 
         all_descendant_galaxyIDs = []
         next_galaxyID = self.get_next_descendant(self._galaxyID) 
         while next_galaxyID != -1:
@@ -135,17 +157,16 @@ class Subgroup():
         if not all_descendant_galaxyIDs:
             return None
         
+        # Collect results into a dict and return
         main_descendant_dict = self.get_galaxyID_info(asarray(all_descendant_galaxyIDs)[::-1])
         
-        # main_descendant_dict = {}
-        # main_descendant_dict['galaxyID']         = asarray(all_descendant_galaxyIDs)[::-1]
-        # main_descendant_dict['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
-        #                                                         main_descendant_dict['galaxyID'],
-        #                                                         self._database._galaxyID_sorter)
-        # main_descendant_dict['nodeIndex']        = self._database['MergerTree/nodeIndex'][main_descendant_dict['positional_index']] 
         return main_descendant_dict
     
     def join_main_progenitors_and_descendants(self):
+        '''
+        Joins information about progenitors and descendants to access
+        the full time evolution of the group.
+        '''
         # Method used to reconstruct evolution (past and future) of given object
         if self._main_progenitors is None:
             main_evolutionary_tree = self._main_descendants
@@ -176,6 +197,9 @@ class Subgroup():
         self.get_property_evolution(property)
         return self.evolution[property]
 
+    #=============================================================================
+    # Helper methods
+    #=============================================================================
     def plot_evolution(self, x_axis, y_axis, x_scale = 'linear', y_scale = 'linear'):
         '''
         Helper function to plot the time evolution of a specified quantity.
@@ -197,6 +221,7 @@ class Subgroup():
         int
             0 on sucessfull execution
         '''
+
         fig, ax1 = plt.subplots(1)
         ax1.plot(self[x_axis],self[y_axis])
         ax1.set_xscale(x_scale)
@@ -204,8 +229,13 @@ class Subgroup():
         ax1.set_xlabel(x_axis)
         ax1.set_ylabel(y_axis)
         plt.show()
+
         return 0
 
+
+    #=============================================================================
+    # Property definitions
+    #=============================================================================
     @property
     def positional_index(self):
         return self._positional_index
