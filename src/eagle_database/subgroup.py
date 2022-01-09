@@ -244,10 +244,14 @@ class Subgroup():
     #=============================================================================
     # Property definitions
     #=============================================================================
-    
+
     @property
-    def positional_index(self):
-        return self._positional_index
+    def subgroup_number(self):
+        return self._subgroup_number
+
+    @property
+    def snap_number(self):
+        return self._snap_number
     
     @property
     def nodeIndex(self):
