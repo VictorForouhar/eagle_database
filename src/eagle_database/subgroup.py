@@ -73,18 +73,37 @@ class Subgroup():
     def get_topLeafID(self):
         return self._database['MergerTree/TopLeafID'][self._positional_index]
 
+    def get_galaxyID_info(self, galaxyID_array):
+        '''
+        Retrieves positional index and nodeIndex of the specified list of galaxyIDs.
+
+        Paramters
+        ----------
+        galaxyID_array : ArrayType
+            Holds the galaxyID values that we want to search for
+
+        Returns
+        ----------
+        galaxyID_info : dict
+            Dictionary holding where to locate galaxyID in this database file (positional_index)
+            and the corresponding nodeIndex of these objects (nodeIndex).
+        '''
+
+        galaxyID_info = {}
+        galaxyID_info['galaxyID']         = galaxyID_array
+        galaxyID_info['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
+                                                         galaxyID_array, self._database._galaxyID_sorter)
+        galaxyID_info['nodeIndex']        = self._database['MergerTree/nodeIndex'][galaxyID_info['positional_index']] 
+        
+        return galaxyID_info
+
     def get_main_progenitors(self):
         '''
         Returns the main progenitors of the subgroup
         '''
-        main_progenitor_dict = {}
-        main_progenitor_dict['galaxyID']         = arange(self._galaxyID,self._topLeafID+1) 
-        main_progenitor_dict['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
-                                                                main_progenitor_dict['galaxyID'],
-                                                                self._database._galaxyID_sorter)
-        main_progenitor_dict['nodeIndex']        = self._database['MergerTree/nodeIndex'][main_progenitor_dict['positional_index']] 
         
-        return main_progenitor_dict 
+        all_progenitor_galaxyIDs = arange(self._galaxyID,self._topLeafID+1)
+        return self.get_galaxyID_info(all_progenitor_galaxyIDs) 
     
     def get_next_descendant(self, galaxyID):
         '''
@@ -104,7 +123,7 @@ class Subgroup():
         # This condition determines when no descendant is found # TODO: check whether this will lead to
         # the descendant being the main subhalo once it has been stripped
         return descendant_galaxyID
-    
+
     def get_main_descendants(self):
 
         # First get all galaxyIDs 
@@ -115,13 +134,15 @@ class Subgroup():
             next_galaxyID    = self.get_next_descendant(next_galaxyID) 
         if not all_descendant_galaxyIDs:
             return None
-        # TODO: move this block of code to its own function, since it is repeated in several cases
-        main_descendant_dict = {}
-        main_descendant_dict['galaxyID']         = asarray(all_descendant_galaxyIDs)[::-1]
-        main_descendant_dict['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
-                                                                main_descendant_dict['galaxyID'],
-                                                                self._database._galaxyID_sorter)
-        main_descendant_dict['nodeIndex']        = self._database['MergerTree/nodeIndex'][main_descendant_dict['positional_index']] 
+        
+        main_descendant_dict = self.get_galaxyID_info(asarray(all_descendant_galaxyIDs)[::-1])
+        
+        # main_descendant_dict = {}
+        # main_descendant_dict['galaxyID']         = asarray(all_descendant_galaxyIDs)[::-1]
+        # main_descendant_dict['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
+        #                                                         main_descendant_dict['galaxyID'],
+        #                                                         self._database._galaxyID_sorter)
+        # main_descendant_dict['nodeIndex']        = self._database['MergerTree/nodeIndex'][main_descendant_dict['positional_index']] 
         return main_descendant_dict
     
     def join_main_progenitors_and_descendants(self):
