@@ -133,10 +133,7 @@ class Subgroup():
         else:
             
             main_evolutionary_tree = {}
-            print (self._main_progenitors)
-            print (self._main_descendants)
             for key in self._main_progenitors.keys():
-                print (key)
                 main_evolutionary_tree[key] = hstack([self._main_descendants[key], self._main_progenitors[key]])
         return main_evolutionary_tree
     
