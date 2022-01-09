@@ -1,4 +1,4 @@
-from numpy import where, arange
+from numpy import where, arange, asarray, hstack
 import matplotlib.pyplot as plt
 from .helper_functions import quick_search
 
@@ -36,8 +36,10 @@ class Subgroup():
         self._galaxyID         = self.get_galaxyID()
         self._topLeafID        = self.get_topLeafID()
         
-        # Retrieving progenitors along the main branch
+        # Retrieving progenitors and descendants along the main branch
         self._main_progenitors = self.get_main_progenitors()
+        self._main_descendants = self.get_main_descendants()
+        self._main_tree        = self.join_main_progenitors_and_descendants()
 
         # Dict where property evolution is stored. Perhaps redshifts should
         # be included here
@@ -83,6 +85,60 @@ class Subgroup():
         main_progenitor_dict['nodeIndex']        = self._database['MergerTree/nodeIndex'][main_progenitor_dict['positional_index']] 
         
         return main_progenitor_dict 
+    
+    def get_next_descendant(self, galaxyID):
+        '''
+        Retrieves galaxyID of the descendant of the specified SUBFIND group.
+
+        Parameters
+        -----------
+        galaxyID : int
+            SUBFIND group we want to find the descendant of
+        '''
+        # Find entry corresponding to current galaxyID
+        positional_index = quick_search(self._database['MergerTree/GalaxyID'], galaxyID,
+                                        self._database._galaxyID_sorter)
+
+        descendant_galaxyID = self._database['MergerTree/DescendantID'][positional_index]
+
+        # This condition determines when no descendant is found # TODO: check whether this will lead to
+        # the descendant being the main subhalo once it has been stripped
+        return descendant_galaxyID
+    
+    def get_main_descendants(self):
+
+        # First get all galaxyIDs 
+        all_descendant_galaxyIDs = []
+        next_galaxyID = self.get_next_descendant(self._galaxyID) 
+        while next_galaxyID != -1:
+            all_descendant_galaxyIDs.append(next_galaxyID[0])
+            next_galaxyID    = self.get_next_descendant(next_galaxyID) 
+        if not all_descendant_galaxyIDs:
+            return None
+        # TODO: move this block of code to its own function, since it is repeated in several cases
+        main_descendant_dict = {}
+        main_descendant_dict['galaxyID']         = asarray(all_descendant_galaxyIDs)[::-1]
+        main_descendant_dict['positional_index'] = quick_search(self._database['MergerTree/GalaxyID'],
+                                                                main_descendant_dict['galaxyID'],
+                                                                self._database._galaxyID_sorter)
+        main_descendant_dict['nodeIndex']        = self._database['MergerTree/nodeIndex'][main_descendant_dict['positional_index']] 
+        return main_descendant_dict
+    
+    def join_main_progenitors_and_descendants(self):
+        # Method used to reconstruct evolution (past and future) of given object
+        if self._main_progenitors is None:
+            main_evolutionary_tree = self._main_descendants
+        elif self._main_descendants is None:
+            main_evolutionary_tree = self._main_progenitors
+        else:
+            
+            main_evolutionary_tree = {}
+            print (self._main_progenitors)
+            print (self._main_descendants)
+            for key in self._main_progenitors.keys():
+                print (key)
+                main_evolutionary_tree[key] = hstack([self._main_descendants[key], self._main_progenitors[key]])
+        return main_evolutionary_tree
     
     def get_property_evolution(self, property):
         '''
