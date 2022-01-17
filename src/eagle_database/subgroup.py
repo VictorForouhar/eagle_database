@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from .helper_functions import quick_search
-from numpy import where, arange, asarray, hstack
+from numpy import where, arange, asarray, hstack, zeros
 
 class Subgroup():
 
@@ -159,7 +159,7 @@ class Subgroup():
     #=============================================================================
     # Methods to retrieve evolution of properties
     #=============================================================================
-
+    # TODO: add way to retrieve units of quantities
     def get_property_evolution(self, property):
         '''
         Retrieves main progenitor branch evolution of specified property.
@@ -170,7 +170,14 @@ class Subgroup():
             Name of the property to retrieve
         '''
         if property not in self.evolution:
-            self.evolution[property] = self._database['Subhalo/%s'%property][()][self._main_progenitors['positional_index']]
+
+            # Handling 3D quantities that have been split into different dimensions 
+            if (property == 'CentreOfPotential') or (property == 'Velocity'):
+                self.evolution[property] = zeros((len(self.evolution['aExp']),3))
+                for i, coord in enumerate(['x','y','z']):
+                    self.evolution[property][:,i] = self.get_property_evolution('%s_%s'%(property,coord))
+            else:
+                self.evolution[property] = self._database['Subhalo/%s'%property][()][self._main_merger_tree['positional_index']]
 
         return self.evolution[property]
 
