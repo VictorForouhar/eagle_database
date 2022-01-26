@@ -32,6 +32,7 @@ class Database():
         self.get_properties()
         self.get_scale_factors()
         self.get_redshifts()
+        self.number_snapshots = len(self.aExp)
 
         # Specify cosmology and get age of the universe at output snapshots
         self.set_cosmology()
@@ -98,6 +99,16 @@ class Database():
     def get_tUniverse(self):
         # Given in Gyrs
         self.tUniverse = self.cosmology.age(self.redshifts).value
+
+    def get_all_nodeIndex(self):
+        '''
+        Returns a list of lists, each holding the nodeIndex for a given snapshot number. 
+        Useful for converting between nodeIndex and subgroup number + snapshot_number
+        '''
+
+        self._all_nodeIndex = []
+        for snap in range(self.number_snapshots):
+            self._all_nodeIndex.append(self['MergerTree/nodeIndex'][self['MergerTree/nodeIndex'] // 1e12 == snap])
 
     def track_subgroup(self, subgroup_number, snap_number):
         '''
