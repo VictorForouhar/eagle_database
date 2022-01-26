@@ -103,7 +103,7 @@ class Database():
         '''
         Creates a Subgroup class.
 
-        Paramters
+        Parameters
         ----------
         subgroup_number : int
             Absolute position of the subgroup in the subfind catalogue.
