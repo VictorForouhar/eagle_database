@@ -1,7 +1,8 @@
 import h5py
 from numpy import argsort
-from astropy.cosmology import FlatLambdaCDM
 from .subgroup import Subgroup
+from .helper_functions import quick_search
+from astropy.cosmology import FlatLambdaCDM
 
 class Database():
 
@@ -123,3 +124,84 @@ class Database():
         '''
         self.subgroup = Subgroup(self, subgroup_number, snap_number)
         return self.subgroup
+
+    #===========================================================
+    # Methods to convert among nodeIndex,
+    # snapshot_number + subgroup, galaxyID
+    #===========================================================
+
+    def galaxyID_to_nodeIndex(self, galaxyID):
+        '''
+        Returns the nodeIndex corresponding to this galaxyID. 
+
+        Parameters
+        -----------
+        galaxyID : int
+            The galaxyID of a given object.
+
+        Returns 
+        -----------
+        int
+            The correspoding nodeIndex
+        '''
+        return self['MergerTree/nodeIndex'][quick_search(self['MergerTree/GalaxyID'], galaxyID, self._galaxyID_sorter)]
+
+    def nodeIndex_to_galaxyID(self, nodeIndex):
+        '''
+        Returns the galaxyID corresponding to this nodeIndex. 
+
+        Parameters
+        -----------
+        nodeIndex : int
+            The nodeIndex of a given object.
+
+        Returns 
+        -----------
+        int
+            The correspoding galaxyID
+        '''
+        return self['MergerTree/GalaxyID'][quick_search(self['MergerTree/nodeIndex'], nodeIndex)]
+
+    def nodeIndex_to_subgroup(self, nodeIndex):
+        '''
+        Parameters
+        -----------
+        nodeIndex : int
+            The nodeIndex of a given object. 
+
+        Returns
+        ------------
+        tuple
+            A tupple containing two integers, corresponding to the subgroup number and the snapshot
+            number of the object, respectively.
+        '''     
+        try: self._all_nodeIndex
+        except: self.get_all_nodeIndex()
+
+        snapshot_number = int(nodeIndex // 1e12)
+        subgroup_number = quick_search(self._all_nodeIndex[snapshot_number], nodeIndex )
+        
+        return subgroup_number, snapshot_number
+    
+    def subgroup_to_nodeIndex(self, subgroup_number, snapshot_number):
+        '''
+        Returns the nodeIndex corresponding to the specified combination of subgroup + snapshot
+        number.
+
+        Parameters
+        -----------
+        subgroup_number : int 
+            The positional index of this group in the corresponding SUBFIND catalogue.
+        snapshot_number : int
+            The snapshot where this object exists.
+
+        Returns
+        -----------
+        int 
+            The nodeIndex of the specified group.
+            
+        '''
+        try: self._all_nodeIndex
+        except: self.get_all_nodeIndex()
+        
+        return self._all_nodeIndex[snapshot_number][subgroup_number]
