@@ -1,4 +1,5 @@
 import h5py
+import numpy as np
 from numpy import argsort
 from .subgroup import Subgroup
 from .helper_functions import quick_search
@@ -177,11 +178,16 @@ class Database():
         '''     
         try: self._all_nodeIndex
         except: self.get_all_nodeIndex()
-
-        snapshot_number = int(nodeIndex // 1e12)
-        subgroup_number = quick_search(self._all_nodeIndex[snapshot_number], nodeIndex )
         
-        return subgroup_number, snapshot_number
+        if isinstance(nodeIndex,np.ndarray):
+            subgroup_list = []
+            for i in range(len(nodeIndex)):
+                subgroup_list.append(self.nodeIndex_to_subgroup(nodeIndex[i])) 
+            return subgroup_list
+        else: 
+            snapshot_number = int(nodeIndex // 1e12)
+            subgroup_number = quick_search(self._all_nodeIndex[snapshot_number], nodeIndex )[0]
+            return subgroup_number, snapshot_number
     
     def subgroup_to_nodeIndex(self, subgroup_number, snapshot_number):
         '''
