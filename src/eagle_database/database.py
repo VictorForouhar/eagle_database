@@ -1,7 +1,9 @@
 import h5py
+import numpy as np
 from numpy import argsort
-from astropy.cosmology import FlatLambdaCDM
 from .subgroup import Subgroup
+from .helper_functions import quick_search
+from astropy.cosmology import FlatLambdaCDM
 
 class Database():
 
@@ -32,6 +34,7 @@ class Database():
         self.get_properties()
         self.get_scale_factors()
         self.get_redshifts()
+        self.number_snapshots = len(self.aExp)
 
         # Specify cosmology and get age of the universe at output snapshots
         self.set_cosmology()
@@ -99,11 +102,21 @@ class Database():
         # Given in Gyrs
         self.tUniverse = self.cosmology.age(self.redshifts).value
 
+    def get_all_nodeIndex(self):
+        '''
+        Returns a list of lists, each holding the nodeIndex for a given snapshot number. 
+        Useful for converting between nodeIndex and subgroup number + snapshot_number
+        '''
+
+        self._all_nodeIndex = []
+        for snap in range(self.number_snapshots):
+            self._all_nodeIndex.append(self['MergerTree/nodeIndex'][self['MergerTree/nodeIndex'] // 1e12 == snap])
+
     def track_subgroup(self, subgroup_number, snap_number):
         '''
         Creates a Subgroup class.
 
-        Paramters
+        Parameters
         ----------
         subgroup_number : int
             Absolute position of the subgroup in the subfind catalogue.
@@ -112,3 +125,89 @@ class Database():
         '''
         self.subgroup = Subgroup(self, subgroup_number, snap_number)
         return self.subgroup
+
+    #===========================================================
+    # Methods to convert among nodeIndex,
+    # snapshot_number + subgroup, galaxyID
+    #===========================================================
+
+    def galaxyID_to_nodeIndex(self, galaxyID):
+        '''
+        Returns the nodeIndex corresponding to this galaxyID. 
+
+        Parameters
+        -----------
+        galaxyID : int
+            The galaxyID of a given object.
+
+        Returns 
+        -----------
+        int
+            The correspoding nodeIndex
+        '''
+        return self['MergerTree/nodeIndex'][quick_search(self['MergerTree/GalaxyID'], galaxyID, self._galaxyID_sorter)]
+
+    def nodeIndex_to_galaxyID(self, nodeIndex):
+        '''
+        Returns the galaxyID corresponding to this nodeIndex. 
+
+        Parameters
+        -----------
+        nodeIndex : int
+            The nodeIndex of a given object.
+
+        Returns 
+        -----------
+        int
+            The correspoding galaxyID
+        '''
+        return self['MergerTree/GalaxyID'][quick_search(self['MergerTree/nodeIndex'], nodeIndex)]
+
+    def nodeIndex_to_subgroup(self, nodeIndex):
+        '''
+        Parameters
+        -----------
+        nodeIndex : int
+            The nodeIndex of a given object. 
+
+        Returns
+        ------------
+        tuple
+            A tupple containing two integers, corresponding to the subgroup number and the snapshot
+            number of the object, respectively.
+        '''     
+        try: self._all_nodeIndex
+        except: self.get_all_nodeIndex()
+        
+        if isinstance(nodeIndex,np.ndarray):
+            subgroup_list = []
+            for i in range(len(nodeIndex)):
+                subgroup_list.append(self.nodeIndex_to_subgroup(nodeIndex[i])) 
+            return subgroup_list
+        else: 
+            snapshot_number = int(nodeIndex // 1e12)
+            subgroup_number = quick_search(self._all_nodeIndex[snapshot_number], nodeIndex )[0]
+            return subgroup_number, snapshot_number
+    
+    def subgroup_to_nodeIndex(self, subgroup_number, snapshot_number):
+        '''
+        Returns the nodeIndex corresponding to the specified combination of subgroup + snapshot
+        number.
+
+        Parameters
+        -----------
+        subgroup_number : int 
+            The positional index of this group in the corresponding SUBFIND catalogue.
+        snapshot_number : int
+            The snapshot where this object exists.
+
+        Returns
+        -----------
+        int 
+            The nodeIndex of the specified group.
+            
+        '''
+        try: self._all_nodeIndex
+        except: self.get_all_nodeIndex()
+        
+        return self._all_nodeIndex[snapshot_number][subgroup_number]
