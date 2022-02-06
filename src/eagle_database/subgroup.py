@@ -41,6 +41,7 @@ class Subgroup():
         self._nodeIndex        = self.get_nodeIndex()
         self._galaxyID         = self.get_galaxyID()
         self._topLeafID        = self.get_topLeafID()
+        self._lastProgenitorID = self.get_lastProgenitorID()
         
         #-------------------------------------------------------------------------
         # Getting main progenitor branch, descendants and joining them
@@ -90,6 +91,13 @@ class Subgroup():
         '''
         return self._database['MergerTree/TopLeafID'][self._positional_index]
 
+    def get_lastProgenitorID(self):
+        '''
+        Returns the maximum galaxyID of the progenitors of this group, regardless of 
+        progenitor branch.
+        '''
+        return self._database['MergerTree/LastProgID'][self._positional_index]
+    
     #=============================================================================
     # Methods related to merger tree descendants/progenitor identification
     #=============================================================================
@@ -271,7 +279,11 @@ class Subgroup():
     @property
     def topLeafID(self):
         return self._topLeafID
-    
+
+    @property
+    def lastProgenitorID(self):
+        return self._lastProgenitorID
+
     @property
     def main_progenitors(self):
         return self._main_progenitors
