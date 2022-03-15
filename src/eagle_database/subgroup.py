@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from .helper_functions import quick_search
 from numpy import where, arange, asarray, hstack, zeros
 
-class Subgroup():
+class Subgroup:
 
     def __init__(self, database, subgroup_number, snap_number):
         """

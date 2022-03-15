@@ -5,7 +5,7 @@ from .subgroup import Subgroup
 from .helper_functions import quick_search
 from astropy.cosmology import FlatLambdaCDM
 
-class Database():
+class Database:
 
     def __init__(self, path):
         '''
