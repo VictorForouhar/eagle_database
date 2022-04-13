@@ -1,4 +1,5 @@
 import h5py
+from tqdm import tqdm
 import numpy as np
 from numpy import argsort
 from .subgroup import Subgroup
@@ -107,9 +108,9 @@ class Database:
         Returns a list of lists, each holding the nodeIndex for a given snapshot number. 
         Useful for converting between nodeIndex and subgroup number + snapshot_number
         '''
-
+        print ('Creating table for quick identification of subgroup numbers')
         self._all_nodeIndex = []
-        for snap in range(self.number_snapshots):
+        for snap in tqdm(range(self.number_snapshots)):
             self._all_nodeIndex.append(self['MergerTree/nodeIndex'][self['MergerTree/nodeIndex'] // 1e12 == snap])
 
     def track_subgroup(self, subgroup_number, snap_number):
@@ -172,9 +173,9 @@ class Database:
 
         Returns
         ------------
-        tuple
-            A tupple containing two integers, corresponding to the subgroup number and the snapshot
-            number of the object, respectively.
+        tuple or list of tuples 
+            Each input nodeIndex is assigned a tuple containing two integers, 
+            corresponding to its SUBFIND group number and snapshot number, respectively.
         '''     
         try: self._all_nodeIndex
         except: self.get_all_nodeIndex()
