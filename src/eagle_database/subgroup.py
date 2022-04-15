@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 from .helper_functions import quick_search
-from numpy import where, arange, asarray, hstack, zeros
+from numpy import where, arange, asarray, hstack, zeros, diff
 
+# TODO: useful to get number of progenitors
 class Subgroup:
 
     def __init__(self, database, subgroup_number, snap_number):
@@ -60,6 +61,11 @@ class Subgroup:
         self.evolution['aExp'    ]  = self._database.aExp     [self['SnapNum']]
         self.evolution['Redshift']  = self._database.redshifts[self['SnapNum']]
         self.evolution['tUniverse'] = self._database.tUniverse[self['SnapNum']]
+
+        self.main_progenitor_branch_length = self.evolution['aExp'].shape[0]
+        
+        # Identify if and when group is lost from the catalogues
+        self._last_resolved_snapshot = self.identify_last_resolved_snapshot()
 
     #=============================================================================
     # Methods to get a hold of this object's info
@@ -163,6 +169,28 @@ class Subgroup:
             for key in self._main_progenitors.keys():
                 main_evolutionary_tree[key] = hstack([self._descendants[key], self._main_progenitors[key]])
         return main_evolutionary_tree
+
+    def identify_last_resolved_snapshot(self):
+        '''
+        It identifies when the main branch of this subgroup ends, e.g
+        when it has merged with a more massive structure or is no 
+        longer resolved.
+        '''
+
+        # Make use of the fact that main branch galaxyID values are separated 
+        # by 1.
+        cumulative_galaxyID_diff = diff(self.main_merger_tree['galaxyID'])
+
+
+        # Find where and if the group is lost from merger trees
+        lost_positional_index = where(cumulative_galaxyID_diff != 1)[0]
+
+        # Group has not been lost case
+        if len(lost_positional_index) == 0:
+            return -1
+        else: 
+            last_resolved_galaxyID = self.main_merger_tree['galaxyID'][lost_positional_index[0]+1]
+            return self['SnapNum'][lost_positional_index[0]+1]
 
     #=============================================================================
     # Methods to retrieve evolution of properties
@@ -295,3 +323,7 @@ class Subgroup:
     @property
     def main_merger_tree(self):
         return self._main_merger_tree
+    
+    @property
+    def last_resolved_snapshot(self):
+        return self._last_resolved_snapshot
