@@ -14,7 +14,7 @@ This will install this package and all required dependencies.
 
 Locate the database file (e.g. Subfind.0.hdf5) and create a Database object:
 ```python
-from eagle_database.database import Database
+from eagle_database import Database
 db = Database(path_to_database_file)
 ```
 This will automatically make available information regarding the simulation (e.g. cosmology, output times, etc).
