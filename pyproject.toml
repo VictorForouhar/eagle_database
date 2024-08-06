@@ -1,7 +1,15 @@
 [build-system]
 requires = [
-    "setuptools>=42",
-    "wheel",
-    "h5py"
-]
-build-backend = "setuptools.build_meta"
+    "h5py",
+    "numpy"
+    "tqdm"
+    "hatchling"
+    ]
+build-backend = "hatchling.build"
+
+[project]
+name = "eagle_database"
+version = "2022.1"
+author = "Victor Forouhar Moreno"
+author_email = "victor.j.forouhar@durham.ac.uk"
+
