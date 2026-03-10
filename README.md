@@ -23,7 +23,7 @@ We can then specify a subgroup we want to track. For example, for a simulation w
 ```python
 # This creates a Subgroup object, where we specify the number of the  
 # subgroup of interest and the snapshot where it exists, respectively
-object_of_interest = db.track_object(0, 127) 
+object_of_interest = db.track_subgroup(0, 127) 
 ```
 
 It is then simple to track the evolution of a given property as a function of time, via:
